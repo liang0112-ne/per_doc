@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文档库首页 - per_doc 原型</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><span class="mark">P</span> per_doc</div>
+  <div class="spacer"></div>
+  <div class="search-wrap">
+    <input class="search" placeholder="搜索文档内容…">
+  </div>
+  <button class="btn btn-primary">＋ 新建文档库</button>
+  <div class="avatar" title="admin">AD</div>
+</header>
+
+<div class="container">
+  <div class="row">
+    <!-- 左栏 -->
+    <div style="flex:1; min-width:0;">
+      <div class="page-title">全部文档库</div>
+      <div class="page-desc">共 3 个文档库 · 72 篇文档</div>
+
+      <div class="grid">
+        <div class="space-card">
+          <div class="cover">API</div>
+          <div class="info">
+            <div class="name">接口文档</div>
+            <div class="meta">
+              <span class="tag tag-public">公开</span>
+              <span style="font-size:12px;color:var(--pd-text-muted);">12 篇文档</span>
+            </div>
+            <div class="desc">后端 RESTful API 接口说明与调用示例，包含鉴权、错误码、请求参数说明。</div>
+          </div>
+        </div>
+
+        <div class="space-card">
+          <div class="cover c2">手册</div>
+          <div class="info">
+            <div class="name">产品手册</div>
+            <div class="meta">
+              <span class="tag tag-private">需密码</span>
+              <span style="font-size:12px;color:var(--pd-text-muted);">30 篇文档</span>
+            </div>
+            <div class="desc">面向最终用户的产品使用手册，含安装部署、常见问题与版本更新记录。</div>
+          </div>
+        </div>
+
+        <div class="space-card">
+          <div class="cover c3">Wiki</div>
+          <div class="info">
+            <div class="name">团队 Wiki</div>
+            <div class="meta">
+              <span class="tag tag-public">公开</span>
+              <span style="font-size:12px;color:var(--pd-text-muted);">30 篇文档</span>
+            </div>
+            <div class="desc">内部知识库，沉淀技术方案、评审记录与会议纪要。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-title" style="margin-top:36px;">分类分组</div>
+      <div class="page-desc">文档库按分组归类，便于快速定位</div>
+      <div class="card">
+        <div class="card-body">
+          <div style="font-size:13px;font-weight:600;color:var(--pd-text-secondary);margin-bottom:10px;">默认分组</div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <a href="03-reader.html" style="color:var(--pd-text);">· 接口文档</a>
+            <a href="03-reader.html" style="color:var(--pd-text);">· 产品手册</a>
+            <a href="03-reader.html" style="color:var(--pd-text);">· 团队 Wiki</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右栏 -->
+    <div style="width:280px; flex-shrink:0;">
+      <div class="card">
+        <div class="card-head">最近更新</div>
+        <div class="card-body" style="padding:6px 16px 12px;">
+          <div class="recent-item">
+            <div>
+              <div class="t"><a href="03-reader.html">用户登录</a></div>
+              <div class="d" style="margin-top:2px;">接口文档</div>
+            </div>
+            <div class="d">3 分钟前</div>
+          </div>
+          <div class="recent-item">
+            <div>
+              <div class="t"><a href="03-reader.html">订单接口</a></div>
+              <div class="d" style="margin-top:2px;">接口文档</div>
+            </div>
+            <div class="d">1 小时前</div>
+          </div>
+          <div class="recent-item">
+            <div>
+              <div class="t"><a href="03-reader.html">数据字典</a></div>
+              <div class="d" style="margin-top:2px;">产品手册</div>
+            </div>
+            <div class="d">昨天</div>
+          </div>
+          <div class="recent-item">
+            <div>
+              <div class="t"><a href="03-reader.html">部署指南</a></div>
+              <div class="d" style="margin-top:2px;">团队 Wiki</div>
+            </div>
+            <div class="d">3 天前</div>
+          </div>
+          <div class="recent-item">
+            <div>
+              <div class="t"><a href="03-reader.html">常见问题</a></div>
+              <div class="d" style="margin-top:2px;">产品手册</div>
+            </div>
+            <div class="d">5 天前</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-head">统计</div>
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;">
+            <span style="color:var(--pd-text-secondary);">文档总数</span><strong>72</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;">
+            <span style="color:var(--pd-text-secondary);">文档库</span><strong>3</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;">
+            <span style="color:var(--pd-text-secondary);">附件</span><strong>28</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;">
+            <span style="color:var(--pd-text-secondary);">本月新增</span><strong>9</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="proto-links">
+  <a href="01-login.html">01 登录</a>
+  <a href="02-home.html" style="font-weight:600;color:var(--pd-primary);">02 首页</a>
+  <a href="03-reader.html">03 阅读</a>
+  <a href="04-editor.html">04 编辑</a>
+  <a href="05-admin.html">05 后台</a>
+  <a href="06-profile.html">06 设置</a>
+</div>
+
+</body>
+</html>

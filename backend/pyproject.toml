@@ -1,0 +1,47 @@
+[project]
+name = "per-doc-backend"
+version = "0.1.0"
+description = "per_doc 轻量级文档管理与录入系统 —— 后端"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "ANN", "S"]
+ignore = [
+    "S101",  # 测试中允许 assert
+    "S106",  # 测试夹具中的占位密码
+    "ANN401", # 允许 Any 参数
+    "B008",   # FastAPI Depends 必须在默认值中调用
+    "B017",   # 测试中允许断言泛型异常
+    "E501",   # 行宽由 ruff format 负责
+    "UP047",  # PEP 695 泛型语法需要 Python 3.12，本机为 3.10
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN", "S101", "S106"]
+"app/migrations/versions/*" = ["E501", "I001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "scripts", "tests"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+mypy_path = "app"
+warn_unused_ignores = false
+ignore_missing_imports = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]

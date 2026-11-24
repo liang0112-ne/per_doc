@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>per_doc 原型导航</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><span class="mark">P</span> per_doc</div>
+  <div class="spacer"></div>
+  <span style="font-size:12px;color:var(--pd-text-muted);">原型导航 · v1.0</span>
+</header>
+
+<div class="container" style="max-width:860px;">
+  <div class="page-title">per_doc 界面原型</div>
+  <div class="page-desc">
+    基于《per_doc 重构方案》§7 前端设计生成。点击卡片进入对应页面。<br>
+    技术栈：Vue 3 + TypeScript + Element Plus　设计语言：主色 #2f6feb / 8px 栅格 / 圆角 6px
+  </div>
+
+  <div class="grid">
+    <a class="space-card" href="01-login.html">
+      <div class="cover c2" style="height:100px;">01</div>
+      <div class="info">
+        <div class="name">登录页</div>
+        <div class="desc">/login　居中卡片 380px，账号密码 + 记住我 + 忘记密码</div>
+      </div>
+    </a>
+    <a class="space-card" href="02-home.html">
+      <div class="cover c3" style="height:100px;">02</div>
+      <div class="info">
+        <div class="name">文档库首页</div>
+        <div class="desc">/　卡片网格 + 分类分组 + 最近更新 + 统计</div>
+      </div>
+    </a>
+    <a class="space-card" href="03-reader.html">
+      <div class="cover" style="height:100px;">03</div>
+      <div class="info">
+        <div class="name">阅读页（核心）</div>
+        <div class="desc">/s/:key　三栏：文档树 280px + 正文 900px + 右侧目录 220px</div>
+      </div>
+    </a>
+    <a class="space-card" href="04-editor.html">
+      <div class="cover c2" style="height:100px;">04</div>
+      <div class="info">
+        <div class="name">编辑页（核心）</div>
+        <div class="desc">/s/:key/edit/:id　三栏：文档树 + Markdown 编辑器 + 实时预览</div>
+      </div>
+    </a>
+    <a class="space-card" href="05-admin.html">
+      <div class="cover c3" style="height:100px;">05</div>
+      <div class="info">
+        <div class="name">后台管理</div>
+        <div class="desc">/manage　四个 Tab：文档库 / 用户 / 配置 / 日志</div>
+      </div>
+    </a>
+    <a class="space-card" href="06-profile.html">
+      <div class="cover" style="height:100px;">06</div>
+      <div class="info">
+        <div class="name">个人设置</div>
+        <div class="desc">/profile　基本信息 / 修改密码 / 头像上传</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="card" style="margin-top:28px;">
+    <div class="card-head">设计约定</div>
+    <div class="card-body">
+      <table class="tbl">
+        <tbody>
+          <tr><td style="width:130px;color:var(--pd-text-secondary);">主色</td><td><code>#2f6feb</code>　成功 <code>#2ea121</code>　危险 <code>#d4380d</code>　警告 <code>#d89614</code></td></tr>
+          <tr><td style="color:var(--pd-text-secondary);">间距</td><td>8px 基准栅格：8 / 16 / 24 / 32</td></tr>
+          <tr><td style="color:var(--pd-text-secondary);">圆角</td><td>卡片与输入框 6px，按钮 4px</td></tr>
+          <tr><td style="color:var(--pd-text-secondary);">字号</td><td>基础 14px，标题 20/16px，阅读正文 15px / 行高 1.75</td></tr>
+          <tr><td style="color:var(--pd-text-secondary);">断点</td><td>768px（平板）　1024px（小屏桌面）　1440px（宽屏）</td></tr>
+          <tr><td style="color:var(--pd-text-secondary);">导航栏</td><td>高 56px，白底 + 1px 底部边框，吸顶</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 环境与数据
+.env
+data/
+*.db
+*.db-wal
+*.db-shm
+uploads/
+
+# Node
+node_modules/
+dist/
+.vite/
+*.local
+
+# 编辑器 / IDE
+.idea/
+.vscode/
+*.swp
+
+# 系统
+.DS_Store
+Thumbs.db

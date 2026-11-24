@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用户登录 - per_doc 原型</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><span class="mark">P</span> per_doc</div>
+  <div class="sep">|</div>
+  <div class="crumb"><a href="02-home.html">接口文档</a> › 基础 › 接口说明</div>
+  <div class="spacer"></div>
+  <div class="search-wrap">
+    <input class="search" placeholder="搜索文档内容…">
+  </div>
+  <button class="btn">导出 PDF</button>
+  <button class="btn btn-primary">编辑</button>
+  <div class="avatar" title="admin">AD</div>
+</header>
+
+<div class="reader">
+  <!-- 左侧文档树 -->
+  <aside class="sidebar">
+    <div style="padding:6px 8px 12px;">
+      <button class="btn btn-primary btn-lg" style="font-size:13px;">＋ 新建文档</button>
+    </div>
+    <div class="tree">
+      <div class="tree-node">
+        <div class="tree-row">
+          <span class="caret open">▶</span>
+          <span class="ico">📁</span>
+          <span class="label">接口文档</span>
+        </div>
+        <div class="tree-children">
+          <div class="tree-node">
+            <div class="tree-row">
+              <span class="caret open">▶</span>
+              <span class="ico">📁</span>
+              <span class="label">基础</span>
+            </div>
+            <div class="tree-children">
+              <div class="tree-node">
+                <div class="tree-row">
+                  <span class="caret open">▶</span>
+                  <span class="ico">📁</span>
+                  <span class="label">接口说明</span>
+                </div>
+                <div class="tree-children">
+                  <div class="tree-node">
+                    <div class="tree-row active">
+                      <span class="caret"></span>
+                      <span class="ico">📄</span>
+                      <span class="label">用户登录</span>
+                    </div>
+                  </div>
+                  <div class="tree-node">
+                    <div class="tree-row">
+                      <span class="caret"></span>
+                      <span class="ico">📄</span>
+                      <span class="label">用户注册</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tree-node">
+                <div class="tree-row">
+                  <span class="caret">▶</span>
+                  <span class="ico">📁</span>
+                  <span class="label">数据字典</span>
+                </div>
+                <div class="tree-children">
+                  <div class="tree-node">
+                    <div class="tree-row">
+                      <span class="caret"></span><span class="ico">📄</span>
+                      <span class="label">订单表</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tree-node">
+            <div class="tree-row">
+              <span class="caret">▶</span>
+              <span class="ico">📁</span>
+              <span class="label">业务接口</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 正文 -->
+  <main class="main">
+    <article class="doc-content">
+      <h1>用户登录</h1>
+
+      <p>通过账号密码完成身份认证，成功后返回 <code>token</code> 与用户基础信息。同一账号连续失败 5 次将锁定 15 分钟。</p>
+
+      <h2>请求参数</h2>
+      <table>
+        <thead>
+          <tr><th>参数</th><th>类型</th><th>必填</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>account</code></td><td>string</td><td>是</td><td>登录账号，可为用户名或邮箱</td></tr>
+          <tr><td><code>password</code></td><td>string</td><td>是</td><td>登录密码，长度 8–32 位</td></tr>
+          <tr><td><code>captcha</code></td><td>string</td><td>否</td><td>开启验证码时必填</td></tr>
+        </tbody>
+      </table>
+
+      <h2>调用示例</h2>
+      <pre><button class="code-copy">复制</button><code>POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "account": "admin",
+  "password": "admin123"
+}</code></pre>
+
+      <h3>成功响应</h3>
+      <pre><button class="code-copy">复制</button><code>{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIs...",
+    "expires_in": 7200,
+    "user": {
+      "member_id": 1,
+      "account": "admin",
+      "real_name": "管理员"
+    }
+  }
+}</code></pre>
+
+      <h3>失败响应</h3>
+      <pre><button class="code-copy">复制</button><code>{
+  "code": 4010,
+  "message": "用户名或密码错误"
+}</code></pre>
+
+      <h2>错误码</h2>
+      <table>
+        <thead><tr><th>错误码</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td><code>4010</code></td><td>用户名或密码错误</td></tr>
+          <tr><td><code>4011</code></td><td>账号已被禁用</td></tr>
+          <tr><td><code>4290</code></td><td>失败次数过多，账号已锁定</td></tr>
+        </tbody>
+      </table>
+
+      <blockquote>提示：登录成功返回的 <code>token</code> 需在后续请求中通过 <code>Authorization: Bearer &lt;token&gt;</code> 传递。</blockquote>
+
+      <h2>公式示例</h2>
+      <p>令牌有效期计算：<code>expires_in = 7200</code> 秒。</p>
+    </article>
+
+    <footer class="doc-footer">
+      最后编辑：<strong>管理员</strong> · 2026-11-24 08:12:33 · 版本 3 ·
+      <a href="04-editor.html">查看历史版本</a>
+    </footer>
+  </main>
+
+  <!-- 右侧目录 -->
+  <aside class="toc">
+    <div style="font-size:12px;font-weight:600;color:var(--pd-text);margin-bottom:10px;">本页目录</div>
+    <a href="#" class="lv1">用户登录</a>
+    <a href="#">请求参数</a>
+    <a href="#" class="lv2">调用示例</a>
+    <a href="#" class="lv3">成功响应</a>
+    <a href="#" class="lv3">失败响应</a>
+    <a href="#">错误码</a>
+    <a href="#">公式示例</a>
+  </aside>
+</div>
+
+<div class="proto-links">
+  <a href="01-login.html">01 登录</a>
+  <a href="02-home.html">02 首页</a>
+  <a href="03-reader.html" style="font-weight:600;color:var(--pd-primary);">03 阅读</a>
+  <a href="04-editor.html">04 编辑</a>
+  <a href="05-admin.html">05 后台</a>
+  <a href="06-profile.html">06 设置</a>
+</div>
+
+</body>
+</html>

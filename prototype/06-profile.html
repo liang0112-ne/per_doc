@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>个人设置 - per_doc 原型</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><span class="mark">P</span> per_doc</div>
+  <div class="spacer"></div>
+  <div class="avatar">AD</div>
+</header>
+
+<div class="container" style="max-width:680px;">
+
+  <div class="card" style="margin-bottom:18px;">
+    <div class="card-head">基本信息</div>
+    <div class="card-body">
+      <div class="field">
+        <label>昵称</label>
+        <input class="input" value="管理员">
+      </div>
+      <div class="field">
+        <label>邮箱</label>
+        <input class="input" value="admin@example.com">
+      </div>
+      <div class="field">
+        <label>手机</label>
+        <input class="input" value="13800138000">
+      </div>
+      <button class="btn btn-primary">保存修改</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px;">
+    <div class="card-head">修改密码</div>
+    <div class="card-body">
+      <div class="field">
+        <label>当前密码</label>
+        <input class="input" type="password" placeholder="请输入当前密码">
+      </div>
+      <div class="field">
+        <label>新密码</label>
+        <input class="input" type="password" placeholder="至少 8 位，包含字母和数字">
+        <div class="hint">至少 8 位，需同时包含字母和数字</div>
+      </div>
+      <div class="field">
+        <label>确认新密码</label>
+        <input class="input" type="password" placeholder="再次输入新密码">
+      </div>
+      <button class="btn btn-primary">修改密码</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">头像</div>
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:18px;">
+        <div class="avatar" style="width:72px;height:72px;font-size:22px;">AD</div>
+        <div>
+          <button class="btn">选择图片</button>
+          <button class="btn btn-danger">移除</button>
+          <div class="hint">支持 jpg / png，不超过 2MB，建议 128×128</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="proto-links">
+  <a href="01-login.html">01 登录</a>
+  <a href="02-home.html">02 首页</a>
+  <a href="03-reader.html">03 阅读</a>
+  <a href="04-editor.html">04 编辑</a>
+  <a href="05-admin.html">05 后台</a>
+  <a href="06-profile.html" style="font-weight:600;color:var(--pd-primary);">06 设置</a>
+</div>
+
+</body>
+</html>

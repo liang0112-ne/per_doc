@@ -1,0 +1,445 @@
+---
+description: per_doc 前端规则 —— Vue 3 组件规范、状态管理、API 调用、样式与构建约定
+globs:
+  - "frontend/src/**/*.{vue,ts,tsx,js}"
+  - "frontend/*.ts"
+  - "frontend/*.json"
+---
+
+# per_doc 前端规则（Frontend Rules）
+
+> 适用范围：`per_doc/frontend/`。全局约定见 `../.cursor/rules/global.mdc`。
+> 本文件补充前端特有的强制规范。
+
+---
+
+## 1. 技术基线
+
+| 项 | 选型 | 约束 |
+|---|---|---|
+| 框架 | Vue 3.4+ | 一律用 `<script setup lang="ts">`，不用 Options API |
+| 语言 | TypeScript | `strict: true` |
+| 构建 | Vite 5 | 别名 `@` → `src` |
+| 路由 | Vue Router 4 | 路由 meta 声明 `title` / `public` / `requiresAuth` |
+| 状态 | Pinia 2 | setup 风格写法（`defineStore` + ref） |
+| UI | Element Plus | 完整引入，按需组件可配 unplugin |
+| HTTP | Axios | 统一出口 `src/api/http.ts` |
+| Markdown | markdown-it + highlight.js + KaTeX | 阅读与预览共用同一个渲染器 |
+
+---
+
+## 2. 目录结构
+
+```
+frontend/src/
+├── api/
+│   ├── http.ts          # Axios 实例 + 拦截器（唯一出口）
+│   ├── types.ts         # 所有请求/响应 TS 类型
+│   ├── auth.ts          # 认证接口
+│   ├── spaces.ts        # 文档库接口
+│   ├── documents.ts     # 文档接口
+│   ├── search.ts        # 搜索接口
+│   ├── attachments.ts   # 附件接口
+│   └── admin.ts         # 后台接口
+├── assets/              # 全局样式、图标
+├── components/          # 可复用组件
+├── composables/         # 组合式函数（use*.ts）
+├── layouts/             # 布局组件
+├── router/
+├── stores/
+├── types/               # 全局类型声明
+├── utils/               # 纯函数工具
+├── views/               # 页面级组件
+├── App.vue
+└── main.ts
+```
+
+---
+
+## 3. 组件规范
+
+### 3.1 基础约定
+
+- 组件文件用 `PascalCase.vue`
+- 单文件组件块顺序：`<script setup>` → `<template>` → `<style scoped>`
+- **`<style>` 一律加 `scoped`**，全局样式才放 `assets/styles/`
+- 组件名与文件名一致，多词组件不要缩写（`DocTree.vue` 而非 `DT.vue`）
+
+### 3.2 Props / Emits
+
+```vue
+<script setup lang="ts">
+interface Props {
+  spaceKey: string
+  activeId?: number
+  draggable?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  activeId: undefined,
+  draggable: true,
+})
+
+const emit = defineEmits<{
+  (e: 'select', id: number): void
+  (e: 'move', payload: { id: number; parentId: number; order: number }): void
+}>()
+</script>
+```
+
+- **props 必须声明类型**，有默认值用 `withDefaults`
+- 布尔 props 默认值应显式写出（避免 `false` 被当成未传）
+- emit 必须用函数重载声明签名
+
+### 3.3 递归组件
+
+文档树 `DocTree` / `DocTreeNode` 需要递归：
+- `DocTree.vue` 内用 `<script setup>` 直接引用自身：`<DocTreeNode v-for=... />`
+- 递归组件必须显式 `name` 以便调试：`defineOptions({ name: 'DocTreeNode' })`
+- 递归传参保持单向（父 → 子），事件向上冒泡
+
+### 3.4 生命周期
+
+- 只用 `onMounted` / `onUnmounted`，避免 `created` / `beforeDestroy`
+- 组件卸载时清理：事件监听、定时器、AbortController
+  ```ts
+  let timer: number | undefined
+  onMounted(() => { timer = window.setInterval(poll, 30000) })
+  onUnmounted(() => { if (timer) window.clearInterval(timer) })
+  ```
+- `watch` 记得返回清理函数处理 `AbortController`
+
+---
+
+## 4. API 调用规范
+
+### 4.1 唯一出口
+
+```ts
+// src/api/http.ts
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
+import router from '@/router'
+
+export const http = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE || '/api',
+  withCredentials: true,
+  timeout: 30000,
+})
+
+http.interceptors.request.use((config) => {
+  const token = localStorage.getItem('csrf_token')
+  if (token && config.method && !['get', 'head'].includes(config.method)) {
+    config.headers['X-CSRF-Token'] = token
+  }
+  return config
+})
+
+http.interceptors.response.use(
+  (res) => res.data,
+  (error) => {
+    const status = error.response?.status
+    const message = error.response?.data?.message || '请求失败'
+    if (status === 401) {
+      router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } })
+    } else {
+      ElMessage.error(message)
+    }
+    return Promise.reject(error)
+  },
+)
+```
+
+**规则**：
+- 组件**禁止** `import axios`，一律从 `@/api/http` 导入 `http`
+- 接口函数集中在 `api/` 下按资源分文件
+- 所有请求/响应类型定义在 `api/types.ts`，接口函数返回 `Promise<T>`
+- 参数用 `params` / `data` 区分清楚（GET 用 params，POST/PUT 用 data）
+
+### 4.2 错误处理归属
+
+- **拦截器负责全局错误**（401 跳转、网络错误）
+- **业务错误由调用方处理**：`try/catch` 中按业务码判断，用 `ElMessage` 提示
+- 不要在拦截器和调用方重复弹同一个提示
+
+---
+
+## 5. 状态管理（Pinia）
+
+### 5.1 Store 划分
+
+| Store | 内容 |
+|---|---|
+| `auth` | 当前用户、`isLoggedIn`、`login()` / `logout()` / `fetchMe()` |
+| `spaces` | 文档库列表、当前空间、文档树 |
+| `document` | 当前文档、编辑器状态、自动保存定时器 |
+| `app` | 主题、侧边栏折叠、全局配置 |
+
+### 5.2 约定
+
+- 一律用 setup 风格：`defineStore('auth', () => { ... })`
+- 状态 `ref` / `computed`，操作写成函数
+- **不要在 store 里直接调 `http`**，通过 `api/` 层函数调用
+- store 之间互相引用用 `useXxxStore()` 在函数内调用，避免循环依赖
+
+### 5.3 持久化
+
+需要跨刷新保留的（如主题、树展开状态）用 `pinia-plugin-persistedstate`，只持久化必要字段。
+
+---
+
+## 6. 路由规范
+
+```ts
+{
+  path: '/s/:key/edit/:id',
+  name: 'editor',
+  component: () => import('@/views/EditorView.vue'),
+  meta: { title: '编辑文档', requiresAuth: true },
+}
+```
+
+- **所有页面组件用动态导入** `() => import(...)`，减小首屏体积
+- `meta.title` 用于设置 `document.title`
+- `meta.public = true` 表示游客可访问
+- 路由守卫统一在 `router/index.ts` 中处理，不散落在各页面
+
+---
+
+## 7. 样式规范
+
+### 7.1 设计变量
+
+所有颜色、间距、圆角走 CSS 变量，定义在 `assets/styles/variables.css`：
+
+```css
+:root {
+  --pd-primary: #2f6feb;
+  --pd-success: #2ea121;
+  --pd-danger: #d4380d;
+  --pd-warning: #d89614;
+  --pd-radius: 6px;
+  --pd-radius-sm: 4px;
+  --pd-header-height: 56px;
+  --pd-sidebar-width: 280px;
+  --pd-content-max: 900px;
+}
+```
+
+暗色模式用 `[data-theme="dark"]` 覆盖同名变量。
+
+### 7.2 约定
+
+- **禁止硬编码颜色值**，一律用 `var(--pd-*)`
+- 间距用 8px 基准：`8 / 16 / 24 / 32`
+- 组件库与自定义样式混用时，自定义类名加 `pd-` 前缀防冲突
+- 响应式断点：`768px`（平板）、`1024px`（小屏桌面）、`1440px`（宽屏）
+
+### 7.3 排版
+
+- 阅读页正文：`font-size: 15px; line-height: 1.75; max-width: 900px`
+- 代码块：`overflow-x: auto`，不换行
+
+---
+
+## 8. Markdown 渲染
+
+- **阅读页与编辑页预览必须使用同一个渲染组件** `MarkdownViewer.vue`
+- 渲染配置集中在一个 `utils/markdown.ts`，不要在两处各写一份
+- 必须开启：代码高亮（highlight.js）、数学公式（KaTeX）、表格、任务列表
+- 外部链接自动加 `target="_blank" rel="noopener noreferrer"`
+- **必须做 XSS 防护**：渲染前用 DOMPurify 净化，或配置 markdown-it 的 `html: false`
+
+---
+
+## 9. 性能
+
+- 大列表用虚拟滚动（文档树节点多时）
+- 图片懒加载
+- 路由组件懒加载（见 §6）
+- 编辑器内容自动保存用 **500ms 防抖 + 30s 静默保存**，不要每次按键都发请求
+- 树数据用 `computed` 派生，不要在 `watch` 里手动复制
+
+---
+
+## 10. 模块化开发流程
+
+**一个组件/模块做完并自测通过，才开始下一个。**
+
+```text
+1. 明确组件边界 → 先定 props / emits / 类型签名
+2. 实现该组件（不夹带其他组件的功能）
+3. 自测：正常渲染 + 边界数据（空/超长/缺失）+ 异常输入
+4. 自测通过 → 接入父组件
+5. 回填 docs/ARCHITECTURE.md 的模块状态
+6. 进入下一个组件
+```
+
+**禁止**：写完多个组件再统一测试；实现 A 组件时顺手把 B 组件也写了。
+
+---
+
+## 11. 自测验证
+
+- 组件完成后**启动 dev server 在浏览器实际点一遍**，不只看代码
+- 重点校验：
+  - **异常分支**（接口报错、返回 null、字段缺失）
+  - **空状态**（列表为空、文档无内容、树无节点）
+  - **超长内容**（超长标题、超大表格、超多树节点）
+- 涉及接口的组件用 **MSW mock** 提供假数据，不依赖后端真实启动
+- 发现问题当场修，不要留到最后统一修
+
+---
+
+## 12. 扩展插槽规范（前端）
+
+前端需为**渲染器扩展、AI 侧边面板、编辑器工具栏扩展**预留插槽。新增扩展项时**不改核心组件**。
+
+### 12.1 插件目录
+
+```text
+frontend/src/
+├── plugins/
+│   ├── base.ts          # ★ 插件契约类型（唯一来源）
+│   ├── registry.ts      # ★ 插件注册表
+│   ├── renderer/        # Markdown 渲染器插件
+│   ├── panel/           # 侧边面板插件（AI 对话等）
+│   └── toolbar/         # 编辑器工具栏扩展项
+```
+
+### 12.2 契约类型
+
+```typescript
+// src/plugins/base.ts
+export interface PluginMeta {
+  name: string
+  version: string
+  description: string
+}
+
+/** Markdown 渲染器插件：在内置渲染之后追加自定义处理 */
+export interface RendererPlugin {
+  meta: PluginMeta
+  /** 处理渲染后的 HTML，返回处理后的 HTML */
+  transform(html: string, context: RenderContext): string
+}
+
+/** 侧边面板插件：在阅读页/编辑页右侧挂载面板 */
+export interface PanelPlugin {
+  meta: PluginMeta
+  /** 面板唯一 key */
+  key: string
+  /** 面板标题，显示在面板切换 Tab 上 */
+  title: string
+  /** 面板组件 */
+  component: Component
+}
+
+/** 编辑器工具栏扩展项 */
+export interface ToolbarExtension {
+  meta: PluginMeta
+  /** 工具栏按钮图标（Element Plus icon 组件名） */
+  icon: string
+  /** 悬浮提示 */
+  tooltip: string
+  /** 点击后执行，返回插入到编辑器的文本 */
+  execute(context: EditorContext): string | Promise<string>
+}
+```
+
+### 12.3 注册表
+
+```typescript
+// src/plugins/registry.ts
+import type { PanelPlugin, RendererPlugin, ToolbarExtension } from './base'
+
+const renderers: RendererPlugin[] = []
+const panels: PanelPlugin[] = []
+const toolbars: ToolbarExtension[] = []
+
+export function registerRenderer(plugin: RendererPlugin): void { renderers.push(plugin) }
+export function registerPanel(plugin: PanelPlugin): void { panels.push(plugin) }
+export function registerToolbar(extension: ToolbarExtension): void { toolbars.push(extension) }
+
+export function allRenderers(): RendererPlugin[] { return [...renderers] }
+export function allPanels(): PanelPlugin[] { return [...panels] }
+export function allToolbars(): ToolbarExtension[] { return [...toolbars] }
+```
+
+### 12.4 核心组件如何消费插件
+
+核心组件**只遍历注册表**，不硬编码任何扩展项：
+
+```vue
+<!-- src/components/MarkdownViewer.vue -->
+<script setup lang="ts">
+import { allRenderers } from '@/plugins/registry'
+
+const props = defineProps<{ source: string }>()
+
+const rendered = computed(() => {
+  let html = renderMarkdown(props.source)
+  for (const plugin of allRenderers()) {
+    html = plugin.transform(html, { source: props.source })
+  }
+  return html
+})
+</script>
+```
+
+```vue
+<!-- src/components/EditorToolbar.vue -->
+<script setup lang="ts">
+import { allToolbars } from '@/plugins/registry'
+</script>
+
+<template>
+  <div class="toolbar">
+    <button
+      v-for="ext in allToolbars()"
+      :key="ext.meta.name"
+      class="tb-btn"
+      :title="ext.tooltip"
+      @click="onExecute(ext)"
+    >{{ ext.icon }}</button>
+  </div>
+</template>
+```
+
+### 12.5 约定
+
+- 插件契约类型**只允许在 `plugins/base.ts` 定义**
+- 注册表是**唯一注册入口**
+- 核心组件**不 import 具体插件实现**，只 import `registry`
+- 插件组件用 `defineAsyncComponent` 懒加载，避免打包体积膨胀
+- 插件卸载：注册表提供 `unregister*(name)` 方法
+- 插件的 TS 类型必须严格，禁止 `any`
+- **不为未实现的插件写空壳组件**（只留类型 + 注册表）
+
+### 12.6 预留的空插槽
+
+| 插槽 | 契约 | 状态 |
+|---|---|---|
+| 渲染器扩展 | `RendererPlugin` | ⬜ 接口已预留 |
+| 侧边面板 | `PanelPlugin` | ⬜ 接口已预留（供 AI 对话使用） |
+| 工具栏扩展 | `ToolbarExtension` | ⬜ 接口已预留 |
+
+---
+
+## 13. 前端禁止事项
+
+- ❌ `import axios` 直接调用（在组件内）
+- ❌ `any` 类型（用 `unknown` + 类型守卫）
+- ❌ `v-for` 用 index 作 key
+- ❌ 修改 props 对象的属性
+- ❌ 在 `<style>` 中写硬编码颜色
+- ❌ 未加 `scoped` 的 `<style>`（全局样式除外）
+- ❌ 从 `prototype/` 复制代码到 `src/`
+- ❌ 引入 jQuery、Bootstrap、cherry-markdown、editor.md 等老库
+- ❌ 核心组件 import 具体插件实现（只走 registry）
+- ❌ 在核心组件里硬编码扩展项（必须遍历注册表）
+- ❌ 为未实现的插件写空壳组件
+- ❌ 插件组件不用懒加载
+- ❌ 单文件超过 300 行而不拆分
+- ❌ 写完多个模块再统一测试
+- ❌ 模块完成后不回填 `docs/ARCHITECTURE.md`

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>后台管理 - per_doc 原型</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><span class="mark">P</span> per_doc</div>
+  <div class="spacer"></div>
+  <button class="btn btn-primary">＋ 新建</button>
+  <div class="avatar">AD</div>
+</header>
+
+<div class="container">
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-pane="spaces">文档库</div>
+    <div class="tab" data-pane="users">用户</div>
+    <div class="tab" data-pane="config">配置</div>
+    <div class="tab" data-pane="logs">日志</div>
+  </div>
+
+  <!-- 文档库 -->
+  <div class="pane-show" data-pane="spaces">
+    <div class="card">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>名称</th><th>标识</th><th>文档数</th><th>状态</th><th>创建时间</th><th style="width:150px;">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>接口文档</strong></td>
+          <td><code>api-docs</code></td>
+          <td>12</td>
+          <td><span class="tag tag-public">公开</span></td>
+          <td>2026-10-12 09:20</td>
+          <td class="ops"><a href="#">编辑</a><a href="#" class="btn-text" style="color:var(--pd-danger);">删除</a></td>
+        </tr>
+        <tr>
+          <td><strong>产品手册</strong></td>
+          <td><code>manual</code></td>
+          <td>30</td>
+          <td><span class="tag tag-private">需密码</span></td>
+          <td>2026-09-03 14:05</td>
+          <td class="ops"><a href="#">编辑</a><a href="#" class="btn-text" style="color:var(--pd-danger);">删除</a></td>
+        </tr>
+        <tr>
+          <td><strong>团队 Wiki</strong></td>
+          <td><code>wiki</code></td>
+          <td>30</td>
+          <td><span class="tag tag-public">公开</span></td>
+          <td>2026-08-21 16:42</td>
+          <td class="ops"><a href="#">编辑</a><a href="#" class="btn-text" style="color:var(--pd-danger);">删除</a></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- 用户 -->
+  <div class="pane-show" data-pane="users" style="display:none;">
+    <div class="card">
+      <table class="tbl">
+        <thead>
+          <tr><th>ID</th><th>账号</th><th>昵称</th><th>邮箱</th><th>状态</th><th>最后登录</th><th style="width:160px;">操作</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td><td><strong>admin</strong></td><td>管理员</td><td>admin@example.com</td>
+            <td><span class="tag tag-public">启用</span></td><td>2026-11-24 08:10</td>
+            <td class="ops"><a href="#">禁用</a><a href="#">重置密码</a></td>
+          </tr>
+          <tr>
+            <td>2</td><td><strong>zhangsan</strong></td><td>张三</td><td>zhangsan@example.com</td>
+            <td><span class="tag tag-public">启用</span></td><td>2026-11-23 17:22</td>
+            <td class="ops"><a href="#">禁用</a><a href="#">重置密码</a></td>
+          </tr>
+          <tr>
+            <td>3</td><td><strong>lisi</strong></td><td>李四</td><td>lisi@example.com</td>
+            <td><span class="tag tag-private">禁用</span></td><td>2026-11-01 09:03</td>
+            <td class="ops"><a href="#" style="color:var(--pd-success);">启用</a><a href="#">重置密码</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 配置 -->
+  <div class="pane-show" data-pane="config" style="display:none;">
+    <div class="card" style="max-width:720px;">
+      <div class="card-head">站点配置</div>
+      <div class="card-body">
+        <div class="field">
+          <label>站点名称</label>
+          <input class="input" value="per_doc">
+        </div>
+        <div class="field">
+          <label>首页公告</label>
+          <textarea class="textarea" rows="3">欢迎使用 per_doc 文档管理系统，请按左侧目录浏览文档。</textarea>
+        </div>
+        <div class="field">
+          <label>允许注册</label>
+          <select class="select"><option>是</option><option>否</option></select>
+          <div class="hint">关闭后仅管理员可在「用户」标签页创建账号</div>
+        </div>
+        <div class="field">
+          <label>附件大小上限（MB）</label>
+          <input class="input" value="100">
+        </div>
+        <div class="field">
+          <label>允许上传的后缀</label>
+          <input class="input" value="txt,pdf,png,jpg,jpeg,gif,doc,docx,xls,xlsx">
+        </div>
+        <div class="field">
+          <label>Markdown 主题</label>
+          <select class="select"><option>theme__light</option><option>theme__dark</option><option>github</option></select>
+        </div>
+        <button class="btn btn-primary">保存配置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日志 -->
+  <div class="pane-show" data-pane="logs" style="display:none;">
+    <div class="card">
+      <table class="tbl">
+        <thead>
+          <tr><th style="width:150px;">时间</th><th style="width:110px;">用户</th><th style="width:120px;">操作</th><th>详情</th><th style="width:130px;">IP</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2026-11-24 08:12</td><td>admin</td><td>更新文档</td><td>接口文档 / 用户登录</td><td>192.168.1.10</td></tr>
+          <tr><td>2026-11-24 08:10</td><td>admin</td><td>登录</td><td>-</td><td>192.168.1.10</td></tr>
+          <tr><td>2026-11-23 17:22</td><td>zhangsan</td><td>创建文档</td><td>团队 Wiki / 部署指南</td><td>192.168.1.24</td></tr>
+          <tr><td>2026-11-23 15:40</td><td>zhangsan</td><td>上传附件</td><td>架构图.png</td><td>192.168.1.24</td></tr>
+          <tr><td>2026-11-23 09:02</td><td>admin</td><td>修改配置</td><td>附件大小上限 100MB</td><td>192.168.1.10</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('#tabs .tab').forEach(function (t) {
+  t.addEventListener('click', function () {
+    document.querySelectorAll('#tabs .tab').forEach(function (x) { x.classList.remove('active'); });
+    t.classList.add('active');
+    document.querySelectorAll('.pane-show').forEach(function (p) {
+      p.style.display = p.dataset.pane === t.dataset.pane ? '' : 'none';
+    });
+  });
+});
+</script>
+
+<div class="proto-links">
+  <a href="01-login.html">01 登录</a>
+  <a href="02-home.html">02 首页</a>
+  <a href="03-reader.html">03 阅读</a>
+  <a href="04-editor.html">04 编辑</a>
+  <a href="05-admin.html" style="font-weight:600;color:var(--pd-primary);">05 后台</a>
+  <a href="06-profile.html">06 设置</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,302 @@
+---
+description: per_doc 项目全局规则 —— 适用于前后端全部代码的架构、风格、错误处理与安全约定
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# per_doc 全局规则（Global Rules）
+
+> 适用范围：整个 `per_doc` 项目的前后端全部代码。
+> 优先级：全局规则 < 前端规则 < 后端规则。冲突时以更具体者为准。
+> 维护位置：`per_doc/.cursor/rules/`
+
+---
+
+## 1. 项目定位
+
+per_doc 是从 MinDoc（Go + Beego）重构建的**轻量级文档管理与录入系统**。
+
+- 后端：Python 3.12 + FastAPI + SQLAlchemy 2.0
+- 前端：Vue 3 + TypeScript + Vite + Pinia + Element Plus
+- 数据库：SQLite（默认）/ PostgreSQL，可通过配置切换
+- 前缀：`PER_DOC_`（环境变量）、`md_`（数据库表）
+
+**项目边界（重要）**：本项目**不包含**团队管理、成员协作、角色权限矩阵、评论点赞、博客系统、第三方登录（钉钉/企微/LDAP）。不要引入这些功能的代码或依赖。
+
+---
+
+## 2. 沟通与语言
+
+- 所有回复、代码注释、文档、提交信息使用**中文**
+- 注释解释「为什么这么做」，不解释「这行代码做了什么」
+- 文档使用中文，代码标识符使用英文
+
+---
+
+## 3. 架构原则
+
+### 3.1 后端分层（不可跨越）
+
+```
+api/       →  只做参数解析、校验、调用 service、组装响应
+services/  →  业务规则、事务边界、权限判定
+models/    →  表结构映射，禁止写业务逻辑
+schemas/   →  请求/响应数据契约（Pydantic）
+```
+
+**硬性约束**：
+- `api/` 层**禁止**直接写 ORM 查询语句
+- `services/` 层**禁止**抛 `HTTPException`，业务异常用自定义异常类
+- **事务边界统一在 service 层**，`api/` 层不写 `db.commit()`
+- 所有数据库操作必须通过 `Depends(get_db)` 注入的 `Session`
+
+### 3.2 前端分层
+
+```
+views/       →  页面级组件，负责编排
+components/  →  可复用组件，props 明确、事件明确
+stores/      →  Pinia，只放跨组件共享状态
+api/         →  所有 HTTP 请求，出口唯一
+```
+
+**硬性约束**：
+- **组件内禁止直接调用 `axios`**，必须走 `api/` 目录下的封装函数
+- 请求/响应类型定义放在 `api/types.ts`，禁止在组件里写 `any`
+- 跨组件状态禁止用 `provide/inject` 传递，优先用 Pinia
+
+---
+
+## 4. 代码风格
+
+### 4.1 Python
+
+- 遵循 PEP 8，行宽 100
+- **所有函数签名带类型注解**，包括 `-> ReturnType`
+- 使用 `from __future__ import annotations` 支持前向引用
+- 公开函数写 docstring（Google 风格），私有函数（`_` 前缀）可不写
+- 命名：`snake_case` 函数/变量，`PascalCase` 类，`UPPER_SNAKE` 常量
+- **禁止裸 `except:`**，必须 `except SpecificError as e`
+- 优先 `dict` / `list` 泛型写法 `dict[str, Any]` 而非 `Dict`
+- 日志用 `logging` 模块，禁止 `print`（脚本除外）
+
+### 4.2 TypeScript / Vue
+
+- `strict: true`，禁止 `any`，确实无法避免时用 `unknown` + 类型守卫
+- 组件用 `<script setup lang="ts">`
+- **props 必须有类型和默认值**，用 `defineProps<Props>()` + `withDefaults`
+- 事件用 `defineEmits<{...}>()` 声明类型
+- 命名：组件 `PascalCase.vue`，变量 `camelCase`，常量 `UPPER_SNAKE`
+- 禁止在 `v-for` 中用 index 作为 key（有状态列表必须用唯一 id）
+
+### 4.3 通用
+
+- 行宽：Python 100 / TS 100
+- 文件末尾必须有换行
+- 不留 `console.log` / `print` / `TODO` / 注释掉的代码块
+
+---
+
+## 5. 命名与标识符规范
+
+| 对象 | 规范 | 示例 |
+|---|---|---|
+| API 路径 | 全小写 + 连字符；资源用复数 | `/api/spaces/{key}/documents` |
+| API 路径参数 | `key` 表示短标识，`id` 表示数字主键 | `/api/spaces/api-docs/documents/12` |
+| Python 模块 | `snake_case` | `document_service.py` |
+| Python 类 | `PascalCase` | `DocumentService` |
+| SQLAlchemy 模型 | 单数 `PascalCase` | `Document` |
+| Vue 组件 | `PascalCase` | `DocTree.vue` |
+| Pinia store | `useXxxStore` | `useAuthStore` |
+| 数据库表 | `md_` 前缀 + 复数 snake_case | `md_documents` |
+| 环境变量 | `PER_DOC_` + 大写下划线 | `PER_DOC_SESSION_MAX_AGE` |
+
+---
+
+## 6. 错误处理
+
+### 6.1 后端
+
+- 定义统一业务异常基类 `AppError`，带 `code` 和 `message`
+- 子类：`NotFoundError`、`ValidationError`、`AuthError`、`PermissionError`、`ConflictError`
+- 全局异常处理器统一转换为：
+
+```json
+{ "code": 4004, "message": "文档不存在", "detail": null }
+```
+
+- **不允许把堆栈信息返回给客户端**（生产环境）
+- 数据库异常要捕获并翻译，不把 SQLAlchemy 原始异常抛给前端
+
+### 6.2 前端
+
+- Axios 响应拦截器统一解包 `data`，统一处理错误
+- 401 → 跳转登录页并带 `redirect` 参数
+- 403 / 404 → 显示对应提示页
+- 业务错误用 `ElMessage.error` 提示，不弹原生 `alert`
+- 需要用户确认的操作用 `ElMessageBox.confirm`
+
+---
+
+## 7. 注释与文档
+
+- 每个模块/文件顶部写一句用途说明
+- 复杂业务逻辑（如文档树排序、版本号分配）必须写清楚**算法逻辑**
+- 从 mindoc-master 移植的业务规则，注释中标注来源：
+  ```python
+  # 移植自 mindoc-master/models/DocumentTree.go 的 FindDocumentTree
+  ```
+- 保留 mindoc-master 作为参照实现，**不要修改它的任何文件**
+
+---
+
+## 8. 测试
+
+- service 层必须有单元测试，覆盖核心业务规则
+- API 层用 `httpx.AsyncClient` + `pytest-asyncio` 做接口测试
+- **Markdown 渲染必须有一致性测试**：用 mindoc-master 导出的 20 篇文档做 golden test，比对 HTML 输出
+- 测试数据用工厂函数（factory），不要硬编码
+
+---
+
+## 9. 安全
+
+- 密码必须用 Argon2id，禁止 MD5/SHA1/明文
+- SQL 全部走 ORM，禁止字符串拼接 SQL
+- 用户上传文件：校验扩展名白名单 + 大小限制 + 随机化存储名
+- 禁止把异常堆栈、SQL 语句、内部路径返回给客户端
+- 生产环境 `DEBUG=false`、`CORS` 收紧到具体域名
+- 移除了原项目的 `/cors-anywhere` 代理，**不要重新引入**（存在 SSRF 风险）
+
+---
+
+## 10. Git 与提交
+
+- 分支：`main` 为生产，`develop` 为开发，功能分支 `feat/xxx` / `fix/xxx`
+- 提交信息格式：`type(scope): 描述`，type 取 `feat|fix|refactor|docs|style|test|chore`
+- 示例：`feat(document): 支持文档树拖拽排序`
+- 一个提交只做一件事，提交前跑通 lint 与测试
+- 不提交：`.env`、`data/`、`*.db`、`node_modules/`、`__pycache__/`、`.venv/`
+
+---
+
+## 11. 目录约定
+
+```
+per_doc/
+├── .cursor/rules/      ← 全局规则（本目录）
+├── backend/
+│   ├── app/
+│   │   ├── migrations/
+│   │   ├── scripts/
+│   │   ├── tests/
+│   │   └── rules/      ← 后端专属规则
+├── frontend/
+│   ├── src/
+│   └── rules/          ← 前端专属规则
+├── docs/
+│   └── ARCHITECTURE.md ← 总体框架设计 + 模块进度
+├── prototype/          ← HTML 原型（评审用，非生产代码）
+└── RULES.md
+```
+
+---
+
+## 12. 扩展性设计（核心）
+
+per_doc 当前只实现**基础的 Markdown 文档写入与存储**。架构必须**预留扩展插槽**，使后续新增能力无需改动现有核心存储逻辑。
+
+### 12.1 预留的扩展方向
+
+| 方向 | 说明 | 接入方式 |
+|---|---|---|
+| 文件解析服务 | PDF / Word / Excel / 图片 OCR → Markdown | 新增 Parser 插件 |
+| 向量索引 | 文档切片 → Embedding → 向量库 | 新增 Indexer 插件 |
+| 智能体对话 | 基于文档的问答、检索增强 | 新增 Agent 插件 |
+| 工具调用 | 智能体可调用的外部工具 | 新增 Tool 注册 |
+| 渲染器扩展 | 自定义 Markdown 渲染管线 | 注册 Renderer |
+| 存储后端 | SQLite / PostgreSQL / 对象存储 | 实现 Storage 接口 |
+| 导出格式 | PDF / EPUB / MOBI / DOCX | 实现 Exporter 接口 |
+
+### 12.2 扩展原则
+
+- **核心流程面向抽象编写，依赖抽象而非具体实现**
+- 扩展能力**独立成模块**，通过**统一接口 + 注册表**接入
+- **插槽只预留接口，不写空实现**（YAGNI）—— 不要提前造没人用的类
+- 插件注册集中在一个 `registry.py`，**不散落在各处**
+- 新增插件时，**主流程代码零改动**
+- 依赖方向单向：`api → services → (plugins) → models`，插件**不得反向依赖**核心层
+
+### 12.3 后端插槽约定
+
+```text
+app/plugins/
+├── base.py          # 所有插件的 Protocol 定义（唯一契约来源）
+├── registry.py      # 插件注册表（唯一注册入口）
+├── parser/          # 文件解析器
+├── indexer/         # 向量索引器
+├── agent/           # 智能体
+├── tool/            # 工具
+├── renderer/        # Markdown 渲染器
+├── exporter/        # 导出器
+└── storage/         # 存储后端
+```
+
+核心存储逻辑（`document_service`）只依赖 `base.py` 里的 Protocol，**不 import 任何具体插件实现**。
+
+### 12.4 前端插槽约定
+
+```text
+frontend/src/
+├── plugins/
+│   ├── base.ts          # 插件契约类型
+│   ├── registry.ts      # 插件注册表
+│   ├── renderer/        # 渲染器插件
+│   ├── panel/           # 侧边面板插件（AI 对话等）
+│   └── toolbar/         # 编辑器工具栏扩展项
+```
+
+编辑器工具栏、阅读页侧边栏都通过**注册表遍历渲染**，新增扩展项不改核心组件。
+
+---
+
+## 13. 模块化开发流程
+
+**一个模块做完并自测通过，才开始下一个模块。**
+
+```text
+1. 明确模块边界 → 先定义接口/类型签名
+2. 实现该模块（不夹带其他模块的功能）
+3. 自测：核心流程 + 边界场景 + 异常输入
+4. 自测通过 → 接入主流程
+5. 回填 docs/ARCHITECTURE.md 的模块状态
+6. 进入下一个模块
+```
+
+**禁止**：写完多个模块再统一测试；实现 A 模块时顺手写 B 模块。
+
+---
+
+## 14. 总体设计文档维护
+
+- 总体框架设计维护在 `per_doc/docs/ARCHITECTURE.md`
+- **每完成一个模块**必须回填：状态标记（✅/🚧/⬜/❌）、完成日期、实现与设计的偏差、遗留待办
+- 模块状态必须与代码实际进度一致
+- 架构**结构性调整**（增删模块、改变依赖方向）时同步更新架构图
+
+---
+
+## 15. 禁止事项清单
+
+- ❌ 引入团队/成员/角色矩阵/评论/博客相关的任何模型或接口
+- ❌ 引入 dingtalk / workweixin / ldap / auth2 相关依赖
+- ❌ 在 `api/` 层直接写 ORM 查询
+- ❌ 在组件内直接 `import axios`
+- ❌ 使用 `any`（TS）或裸 `except`（Python）
+- ❌ 修改 `mindoc-master/` 目录下的任何文件
+- ❌ 把 `prototype/` 下的原型代码直接复制到 `frontend/src/`
+- ❌ 在核心存储逻辑中 import 具体插件实现（必须依赖 Protocol）
+- ❌ 提前写没人用的插件空实现（只留接口）
+- ❌ 单文件超过 400 行（Python）/ 300 行（Vue）而不拆分
+- ❌ 写完多个模块再统一测试
+- ❌ 模块完成后不回填 `docs/ARCHITECTURE.md`

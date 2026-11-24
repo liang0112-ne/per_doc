@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>编辑文档 - per_doc 原型</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><span class="mark">P</span> per_doc</div>
+    <div class="sep">|</div>
+    <div class="crumb">接口文档 / 基础 / 接口说明 / <strong>用户登录</strong></div>
+    <div class="spacer"></div>
+    <button class="btn">历史版本</button>
+    <button class="btn">预览</button>
+    <button class="btn btn-primary">保存</button>
+    <div class="avatar">AD</div>
+  </header>
+  <div class="editor-body">
+    <aside class="sidebar">
+      <div style="padding:12px;">
+        <div class="tree">
+          <div class="tree-row"><span class="caret open">▶</span><span class="ico">📁</span><span class="label">接口文档</span></div>
+          <div class="tree-children">
+            <div class="tree-row"><span class="caret open">▶</span><span class="ico">📁</span><span class="label">基础</span></div>
+            <div class="tree-children">
+              <div class="tree-row"><span class="caret open">▶</span><span class="ico">📁</span><span class="label">接口说明</span></div>
+              <div class="tree-children">
+                <div class="tree-row active"><span class="caret"></span><span class="ico">📄</span><span class="label">用户登录</span></div>
+                <div class="tree-row"><span class="caret"></span><span class="ico">📄</span><span class="label">用户注册</span></div>
+              </div>
+              <div class="tree-row"><span class="caret">▶</span><span class="ico">📁</span><span class="label">数据字典</span></div>
+            </div>
+            <div class="tree-row"><span class="caret">▶</span><span class="ico">📁</span><span class="label">业务接口</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:auto;padding:12px;border-top:1px solid var(--pd-border);">
+        <button class="btn" style="width:100%;">＋ 新建文档</button>
+      </div>
+    </aside>
+
+    <section class="pane">
+      <div class="toolbar">
+        <button class="tb-btn" title="粗体"><b>B</b></button>
+        <button class="tb-btn" title="斜体"><i>I</i></button>
+        <button class="tb-btn" title="标题">H</button>
+        <span class="tb-sep"></span>
+        <button class="tb-btn" title="引用">❝</button>
+        <button class="tb-btn" title="无序列表">☰</button>
+        <button class="tb-btn" title="有序列表">≡</button>
+        <button class="tb-btn" title="任务列表">☑</button>
+        <span class="tb-sep"></span>
+        <button class="tb-btn" title="代码块">&lt;/&gt;</button>
+        <button class="tb-btn" title="表格">▦</button>
+        <button class="tb-btn" title="链接">🔗</button>
+        <button class="tb-btn" title="图片">🖼</button>
+        <button class="tb-btn" title="分割线">—</button>
+        <span class="tb-sep"></span>
+        <button class="tb-btn" title="上传图片">⬆</button>
+        <button class="tb-btn" title="插入表格">⊞</button>
+      </div>
+      <div class="pane-body">
+        <textarea class="code-area" spellcheck="false"># 用户登录
+
+通过账号密码完成身份认证，成功后返回 `token` 与用户基础信息。
+
+## 请求参数
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| account | string | 是 | 登录账号 |
+| password | string | 是 | 登录密码 |
+
+## 调用示例
+
+```bash
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "account": "admin",
+  "password": "admin123"
+}
+```
+
+## 错误码
+
+- `4010` 用户名或密码错误
+- `4011` 账号已被禁用</textarea>
+      </div>
+    </section>
+
+    <section class="pane">
+      <div class="pane-head">
+        <span>实时预览</span>
+        <span style="flex:1"></span>
+        <span style="font-size:11px;">Markdown</span>
+      </div>
+      <div class="pane-body" style="padding:16px 20px;">
+        <div class="doc-content" style="max-width:none;">
+          <h1 style="font-size:22px;">用户登录</h1>
+          <p>通过账号密码完成身份认证，成功后返回 <code>token</code> 与用户基础信息。</p>
+          <h2 style="font-size:17px;">请求参数</h2>
+          <table>
+            <thead><tr><th>参数</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>account</code></td><td>string</td><td>是</td><td>登录账号</td></tr>
+              <tr><td><code>password</code></td><td>string</td><td>是</td><td>登录密码</td></tr>
+            </tbody>
+          </table>
+          <h2 style="font-size:17px;">调用示例</h2>
+          <pre><code>POST /api/v1/auth/login
+
+{
+  "account": "admin",
+  "password": "admin123"
+}</code></pre>
+          <h2 style="font-size:17px;">错误码</h2>
+          <ul>
+            <li><code>4010</code> 用户名或密码错误</li>
+            <li><code>4011</code> 账号已被禁用</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="editor-status">
+    <span><span class="dot"></span> 已保存</span>
+    <span>版本 3</span>
+    <span>2026-11-24 08:12:33</span>
+    <span style="flex:1"></span>
+    <span>Markdown</span>
+    <span>UTF-8</span>
+    <span>1,024 字</span>
+  </div>
+</div>
+
+<div class="proto-links">
+  <a href="01-login.html">01 登录</a>
+  <a href="02-home.html">02 首页</a>
+  <a href="03-reader.html">03 阅读</a>
+  <a href="04-editor.html" style="font-weight:600;color:var(--pd-primary);">04 编辑</a>
+  <a href="05-admin.html">05 后台</a>
+  <a href="06-profile.html">06 设置</a>
+</div>
+
+</body>
+</html>
