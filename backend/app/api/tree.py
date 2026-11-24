@@ -3,7 +3,7 @@
 只做「参数解析 → 校验 → 调 service → 组装响应」，
 ORM 查询与事务边界都在 ``app.services.tree_service`` 中。
 
-接口清单见重构方案 §6.2：
+接口清单：
 - ``GET /api/spaces/{key}/tree``  读取文档树
 
 说明：节点移动（``POST /api/spaces/{key}/documents/{id}/move``）

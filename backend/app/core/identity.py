@@ -3,8 +3,7 @@
 这里只放「与存储、传输无关」的纯格式校验，供 Pydantic schema 与
 service 层共用，避免同一套正则散落在多处。
 
-账号与邮箱的正则移植自 mindoc-master/conf/enumerate.go 的
-``RegexpAccount`` / ``RegexpEmail``；密码强度规则来自重构方案 §5.3。
+账号与邮箱的正则取自既有系统的校验规则；密码强度规则见本文件下方的常量。
 """
 
 from __future__ import annotations
@@ -14,14 +13,14 @@ import re
 # 账号规则：字母或数字开头，允许字母、数字、点、横线，长度 3~51
 ACCOUNT_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9\.-]{2,50}$")
 
-# 邮箱规则：移植自 mindoc-master/conf/enumerate.go 的 RegexpEmail
+# 邮箱规则：与既有系统保持一致
 EMAIL_PATTERN = re.compile(
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+"
     r"@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?"
     r"(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 )
 
-# 密码长度下限（重构方案 §5.3）
+# 密码长度下限
 PASSWORD_MIN_LENGTH = 8
 # 密码长度上限，防止超长输入拖慢 Argon2 计算
 PASSWORD_MAX_LENGTH = 64

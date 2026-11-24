@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class TreeNodeOut(BaseModel):
     """文档树节点。
 
-    结构与重构方案 §6.3 的示例一致：节点自带 ``children`` 递归数组，
+    结构为：节点自带 ``children`` 递归数组，
     ``is_dir`` 表示该节点是否是目录（含子节点）。
     """
 

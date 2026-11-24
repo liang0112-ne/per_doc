@@ -8,8 +8,7 @@
 本模块不感知 HTTP（不抛 ``HTTPException``、不 import ``Depends``），
 Cookie 的写入由 ``app.core.session`` 与 api 层配合完成。
 
-移植自 mindoc-master/controllers/AccountController.go 的登录与注册规则，
-但删除了验证码、第三方登录与找回密码（见重构方案 §2.2 项目边界）。
+项目边界：不包含验证码、第三方登录与邮件找回密码。
 """
 
 from __future__ import annotations
@@ -45,7 +44,7 @@ def authenticate(db: Session, account: str, password: str) -> Member:
     业务规则：
     1. 账号被锁定时直接拒绝，提示剩余锁定时间
     2. 密码错误计入失败次数，连续 5 次失败锁定 15 分钟
-    3. 存量 mindoc 密码校验通过后自动升级为 Argon2id
+    3. 存量密码校验通过后自动升级为 Argon2id
 
     Args:
         db: 数据库会话。
@@ -190,7 +189,7 @@ def touch_last_login(db: Session, member: Member) -> None:
 def _upgrade_password_hash(db: Session, member: Member, plain_password: str) -> None:
     """存量密码或参数过期的哈希升级为 Argon2id。
 
-    移植自重构方案 §5.3：存量用户首次登录时用旧算法校验，
+    存量用户首次登录时用旧算法校验，
     校验成功后立即改写为 Argon2id，旧哈希不再保留。
 
     哈希不可逆，明文只能在「刚校验通过」的那一次调用里拿到，

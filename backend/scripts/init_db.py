@@ -30,7 +30,7 @@ from app.models import Member, Option
 
 logger = logging.getLogger("scripts.init_db")
 
-# 默认系统配置项，与重构方案 §8.1 的配置设计对应
+# 默认系统配置项
 DEFAULT_OPTIONS: dict[str, str] = {
     "site_name": settings.site_name,
     "default_cover": settings.default_cover,

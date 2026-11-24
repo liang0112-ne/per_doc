@@ -3,7 +3,7 @@
 覆盖：
 - 身份格式校验（账号 / 邮箱 / 密码强度）
 - 登录成功、密码错误、账号禁用、锁定策略
-- 存量 mindoc 密码首登升级为 Argon2id
+- 存量密码首登升级为 Argon2id
 - 注册（成功 / 重复账号 / 密码不一致 / 强度不足 / 注册关闭）
 - 修改密码（原密码错误 / 两次不一致 / 强度不足 / 与原密码相同）
 """
@@ -21,7 +21,7 @@ from app.core.identity import (
     is_valid_email,
     validate_password_strength,
 )
-from app.core.legacy_password import build_mindoc_password
+from app.core.legacy_password import build_legacy_password
 from app.core.security import hash_password, is_legacy_hash, login_limiter
 from app.models.member import Member
 from app.services import auth_service
@@ -84,7 +84,7 @@ class TestIdentityRules:
 
     @pytest.mark.parametrize(
         "email",
-        # 注意：mindoc 原正则不强制域名带点，"a@b" 合法，此处保持一致
+        # 注意：原有正则不强制域名带点，"a@b" 合法，此处保持一致
         ["", "a@@b.com", "@b.com", "a b@c.com", "a@b.c@d"],
     )
     def test_invalid_email(self, email: str) -> None:
@@ -159,8 +159,8 @@ class TestAuthenticate:
         assert login_limiter.is_locked("admin") is False
 
     def test_legacy_password_upgraded_on_login(self, session: Session) -> None:
-        """存量 mindoc 密码首登后应改写为 Argon2id。"""
-        legacy = build_mindoc_password("legacy123")
+        """存量密码首登后应改写为 Argon2id。"""
+        legacy = build_legacy_password("legacy123")
         member = Member(
             account="legacy",
             real_name="legacy",
@@ -179,7 +179,7 @@ class TestAuthenticate:
 
     def test_legacy_password_wrong_keeps_hash(self, session: Session) -> None:
         """存量密码校验失败时不改写哈希。"""
-        legacy = build_mindoc_password("legacy123")
+        legacy = build_legacy_password("legacy123")
         member = Member(account="legacy2", real_name="legacy2", password=legacy, status=0)
         session.add(member)
         session.commit()

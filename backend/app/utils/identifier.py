@@ -1,10 +1,10 @@
 """URL 短标识（identify）的生成与校验。
 
 ``identify`` 是文档库与文档在 URL 中的唯一标识，全局唯一。
-规则移植自 mindoc-master：
+规则说明：
 
-- 文档库：``controllers/BookController.go`` 的 ``^[a-z]+[a-zA-Z0-9_\\-]*$``
-- 文档：``models/DocumentModel.go`` 与重构方案 §10.2 的 ``^[a-z][a-zA-Z0-9_.-]*$``
+- 文档库：``^[a-z]+[a-zA-Z0-9_\\-]*$``，人工填写的短横线风格
+- 文档：``^[a-z][a-zA-Z0-9_.-]*$``
 
 两者只差「是否允许点号」，因为存量文档的 identify 可能形如
 ``guide.install``，而文档库标识是人工填写的短横线风格。
@@ -22,7 +22,7 @@ SPACE_IDENTIFY_PATTERN = re.compile(r"^[a-z][a-zA-Z0-9_-]*$")
 # 文档标识：小写字母开头，额外允许点号
 DOCUMENT_IDENTIFY_PATTERN = re.compile(r"^[a-z][a-zA-Z0-9_.-]*$")
 
-# 标识最大长度，与 mindoc 的 50 字符上限一致
+# 标识最大长度，与存量数据的 50 字符上限一致
 IDENTIFY_MAX_LENGTH = 50
 
 # 生成标识时保留的随机字节数，32 bit 熵足够在单库内避免碰撞

@@ -1,7 +1,7 @@
 """文档表。
 
-对应 mindoc-master 的 ``md_documents``，仅把 ``book_id`` 更名为 ``space_id``，
-其余列名保持不变以便存量数据直接导入。
+除 ``book_id`` 更名为 ``space_id`` 外，其余列名保持 snake_case 风格，
+便于存量数据直接导入。
 """
 
 from __future__ import annotations

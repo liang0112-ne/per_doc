@@ -1,7 +1,7 @@
 """应用配置。
 
 所有配置只从 ``Settings`` 读取，业务代码禁止直接访问 ``os.environ``。
-新增配置项需同步三处：``Settings``、``.env.example``、重构方案 §8.1。
+新增配置项需同步三处：``Settings``、``.env.example``、总体设计文档。
 """
 
 from __future__ import annotations

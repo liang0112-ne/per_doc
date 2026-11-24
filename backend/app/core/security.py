@@ -1,6 +1,6 @@
 """密码哈希、会话签名与 CSRF 工具。
 
-密码一律使用 Argon2id；兼容 mindoc-master 的旧 MD5 hash，校验成功后
+密码一律使用 Argon2id；兼容存量系统的旧哈希，校验成功后
 在调用方（auth_service）触发升级。
 """
 
@@ -15,11 +15,11 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 
 from app.core.config import settings
-from app.core.legacy_password import is_mindoc_hash, verify_mindoc_password
+from app.core.legacy_password import is_legacy_hash_format, verify_legacy_password
 
 _hasher = PasswordHasher()
 
-# 登录失败锁定参数，移植自重构方案 §5.3 的密码策略
+# 登录失败锁定参数
 MAX_LOGIN_ATTEMPTS = 5
 LOCK_DURATION_SECONDS = 900
 
@@ -100,7 +100,7 @@ def hash_password(plain: str) -> str:
 def verify_password(stored_hash: str, plain: str) -> bool:
     """校验密码。
 
-    兼容 mindoc-master 的存量密码格式：校验成功时返回 True，
+    兼容存量系统的旧哈希格式：校验成功时返回 True，
     调用方（auth_service）负责在下次登录时升级为 Argon2id。
     """
     if not stored_hash:
@@ -111,8 +111,8 @@ def verify_password(stored_hash: str, plain: str) -> bool:
         except (VerifyMismatchError, VerificationError, InvalidHashError):
             return False
         return True
-    if is_mindoc_hash(stored_hash):
-        return verify_mindoc_password(stored_hash, plain)
+    if is_legacy_hash_format(stored_hash):
+        return verify_legacy_password(stored_hash, plain)
     return False
 
 

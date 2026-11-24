@@ -1,7 +1,7 @@
 """文档库（空间）表。
 
-对应 mindoc-master 的 ``md_books``。原表的多级项目空间（``md_itemsets``）
-降级为 ``group_name`` 字段，评论、分享、打印等特性已裁剪。
+文档库是 per_doc 中的顶层内容容器。多级项目空间已降级为
+``group_name`` 字段，评论、分享、打印等特性已裁剪。
 """
 
 from __future__ import annotations

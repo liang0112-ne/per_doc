@@ -1,11 +1,10 @@
-"""mindoc-master 存量密码兼容校验。
+"""存量密码兼容校验。
 
-移植自 mindoc-master/utils/password.go：
-密码存储格式为 ``salt_secret$interation$hash$salt``，其中 hash 由
-SHA-512 → 倍增迭代 → SHA-256 → SHA-256/224 三段拉伸得到。
-
-本模块只用于「存量用户首次登录时校验旧密码」，校验成功后由调用方
+用于存量用户首次登录时校验旧密码哈希，校验成功后由调用方
 升级为 Argon2id。新系统不再产生这种格式的密码。
+
+历史密码格式为 ``salt_secret$interation$hash$salt``，其中 hash 由
+SHA-512 → 倍增迭代 → SHA-256 → SHA-256/224 三段拉伸得到。
 """
 
 from __future__ import annotations
@@ -15,19 +14,19 @@ import hashlib
 import hmac
 import secrets
 
-# 与 mindoc-master/utils/password.go 中的常量保持一致
-SALT_LOCAL_SECRET = "ahfw*&TGdsfnbi*^Wt"  # noqa: S105 - 与 mindoc 保持一致的算法常量
+# 与历史实现保持一致的算法常量
+SALT_LOCAL_SECRET = "ahfw*&TGdsfnbi*^Wt"  # noqa: S105 - 算法常量，不可变更
 STRETCHING_PASSWORD = 500
 SALT_SIZE = 16
 DELIMITER = "$"
 
-# mindoc 的随机盐值长度区间
+# 随机盐值长度区间
 _SALT_SECRET_MIN_LEN = 10
 _SALT_SECRET_MAX_LEN = 100
 
 
-def verify_mindoc_password(stored_hash: str, plain: str) -> bool:
-    """按 mindoc 的算法校验存量密码。
+def verify_legacy_password(stored_hash: str, plain: str) -> bool:
+    """按历史算法校验存量密码。
 
     Args:
         stored_hash: 数据库中保存的 ``salt_secret$interation$hash$salt``。
@@ -50,14 +49,14 @@ def verify_mindoc_password(stored_hash: str, plain: str) -> bool:
     return hmac.compare_digest(computed, expected)
 
 
-def is_mindoc_hash(stored_hash: str) -> bool:
-    """判断是否为 mindoc 的存量密码格式。"""
+def is_legacy_hash_format(stored_hash: str) -> bool:
+    """判断是否为存量密码格式。"""
     parts = stored_hash.split(DELIMITER)
     return len(parts) == 4 and parts[0] != "" and parts[3] != ""
 
 
 def _hash(plain: str, salt_secret: str, salt: str, interation: int) -> str:
-    """复刻 mindoc 的密码拉伸算法。"""
+    """复刻历史密码拉伸算法。"""
     pass_salt = salt_secret + plain + salt + salt_secret + plain + salt + plain + plain + salt
 
     hash_pass = SALT_LOCAL_SECRET
@@ -74,7 +73,7 @@ def _hash(plain: str, salt_secret: str, salt: str, interation: int) -> str:
         sha256_state.update((hash_pass + salt_secret).encode("utf-8"))
         hash_pass = sha256_state.hexdigest()
 
-    # Go 的 sha256.New224() 等价于 SHA-224
+    # SHA-224 为 SHA-256 的截断变体，此处用 hashlib 直接计算
     sha224_state = hashlib.sha224()
     sha224_state.update((hash_pass + SALT_LOCAL_SECRET).encode("utf-8"))
     return sha224_state.hexdigest()
@@ -93,8 +92,8 @@ def _new_salt() -> str:
     return (buf + digest).hex()
 
 
-def build_mindoc_password(plain: str, interation: int = 3) -> str:
-    """构造一条 mindoc 格式的密码记录（供迁移脚本与自测使用）。"""
+def build_legacy_password(plain: str, interation: int = 3) -> str:
+    """构造一条存量格式的密码记录（供迁移脚本与自测使用）。"""
     salt_secret = _new_salt_secret()
     salt = _new_salt()
     hashed = _hash(plain, salt_secret, salt, interation)

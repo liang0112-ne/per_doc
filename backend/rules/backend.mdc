@@ -109,7 +109,7 @@ class Document(Base):
 **约定**：
 - **必须**用 `Mapped[T]` + `mapped_column()`，禁止旧式 `Column()` + `__tablename__` 混用
 - 类型注解写清楚可空性：`str | None` 表示可空
-- 列名显式指定（与 mindoc 兼容的 snake_case）
+- 列名显式指定（snake_case 风格，与存量数据兼容）
 - 关系用 `relationship()`，`back_populates` 双向声明
 - **不要用 `lazy="selectin"` 到处加**，按场景在查询时指定 `options(selectinload(...))`
 
@@ -401,7 +401,7 @@ def client(db: Session) -> TestClient:
 - **service 层必须有单元测试**，覆盖文档树构建、排序分配、版本号递增、权限判定
 - API 测试用 `TestClient` + `dependency_overrides`
 - 测试库用**独立 SQLite 文件或内存库**，不碰开发数据
-- **Markdown 渲染一致性测试必须有**（golden test，比对 mindoc-master 输出）
+- **Markdown 渲染一致性测试必须有**（golden test，比对基准输出）
 - 测试数据用工厂函数，不硬编码
 
 ---

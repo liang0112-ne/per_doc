@@ -7,15 +7,14 @@
 
 本模块不感知 HTTP（不抛 ``HTTPException``、不 import ``Depends``）。
 
-权限模型（重构方案 §5.4，per_doc 只有两种身份）：
+权限模型（per_doc 只有两种身份）：
 
 | 身份 | 判定 | 权限 |
 |---|---|---|
 | 登录用户 | Session 有效 | 读写全部文档库 |
 | 游客 | 无 Session | 只读公开库；私有库需通过访问密码 |
 
-移植自 mindoc-master/controllers/BookController.go 与
-models/BookModel.go，但删除了团队 / 角色矩阵 / 分享 / 导入导出等特性。
+团队 / 角色矩阵 / 分享 / 导入导出等特性已裁剪。
 """
 
 from __future__ import annotations
@@ -132,7 +131,7 @@ def create_space(
     创建时会：
     1. 生成或校验唯一标识
     2. 若设为私有库，必须提供访问密码
-    3. 自动创建根目录节点与一篇空白文档（对应 mindoc 的建库行为）
+    3. 自动创建根目录节点与一篇空白文档（作为后续文档的挂载点）
 
     Args:
         db: 数据库会话。
@@ -347,7 +346,6 @@ def _resolve_identify(db: Session, payload: SpaceCreate) -> str:
 def _create_root_document(db: Session, space: Space, member_id: int) -> None:
     """为新建文档库创建根目录节点与初始空白文档。
 
-    移植自 mindoc-master/models/BookModel.go 的 ``Book.Insert``：
     建库时插入一篇名为「空白文档」的根节点，作为后续文档的挂载点。
     """
     root = Document(

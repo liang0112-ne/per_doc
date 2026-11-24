@@ -138,7 +138,7 @@ class TestCreateSpace:
         assert space.password is None
 
     def test_create_creates_root_document(self, session: Session, owner: Member) -> None:
-        """建库时自动创建根节点与空白文档（移植自 mindoc Book.Insert）。"""
+        """建库时自动创建根节点与空白文档。"""
         space = space_service.create_space(session, make_payload(), owner)
         docs = list(
             session.scalars(

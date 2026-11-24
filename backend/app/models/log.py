@@ -1,6 +1,6 @@
 """操作日志表。
 
-对应 mindoc-master 的 ``md_logs``，字段做了精简映射（见重构方案 §10.1）。
+记录关键写操作，供后台审计查看。
 """
 
 from __future__ import annotations

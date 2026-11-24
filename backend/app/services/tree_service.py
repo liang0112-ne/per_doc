@@ -8,15 +8,12 @@
 本模块不感知 HTTP（不抛 ``HTTPException``、不 import ``Depends``），
 也不直接产出响应 schema —— 响应组装由 ``app.api`` 层完成。
 
-移植自 mindoc-master 的文档树实现：
-- ``models/DocumentTree.go`` 的 ``FindDocumentTree``：按 ``order_sort``、
-  ``document_id`` 排序拉取全部节点
-- ``models/DocumentModel.go`` 的 ``InsertOrUpdate``：新节点的 ``order_sort``
-  取「同级已有节点数 + 1」
-- ``controllers/BookController.go`` 的 ``UpdateDocumentSort``：拖拽排序后
-  批量回写 ``order_sort`` 与 ``parent_id``
+算法说明：
+- 拉取全部节点时按 ``order_sort``、``document_id`` 排序，保证顺序稳定
+- 新节点的 ``order_sort`` 取同级最大值 + 1，避免同级出现重复值
+- 拖拽排序后把受影响的同级节点重排为连续的 1..N
 
-与 mindoc 的差异：mindoc 返回**扁平**节点列表交给 jstree 自行拼树，
+与常见做法的差异：常见做法是返回**扁平**节点列表交给前端树组件自行拼装，
 per_doc 直接在服务端拼成递归结构，前端只负责渲染与拖拽。
 """
 
@@ -58,8 +55,8 @@ class TreeNode:
 def list_documents(db: Session, space_id: int) -> list[Document]:
     """按库取出全部文档节点，按 ``order_sort``、``document_id`` 排序。
 
-    排序规则移植自 mindoc-master ``models/DocumentTree.go``：
-    先按 ``order_sort`` 升序，同值时按 ``document_id`` 升序，保证顺序稳定。
+    排序规则：先按 ``order_sort`` 升序，同值时按 ``document_id`` 升序，
+    保证顺序稳定。
 
     Args:
         db: 数据库会话。
@@ -133,7 +130,6 @@ def count_documents(db: Session, space_id: int) -> int:
 def next_order_sort(db: Session, space_id: int, parent_id: int) -> int:
     """计算新节点在同一父级下的排序值。
 
-    移植自 mindoc-master ``models/DocumentModel.go`` 的 ``InsertOrUpdate``：
     ``order_sort`` 取「同级已有节点数 + 1」。此处改为取同级最大值 + 1，
     避免同级节点被外部批量改写 ``order_sort`` 后出现重复。
 

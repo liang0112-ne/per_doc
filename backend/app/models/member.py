@@ -1,7 +1,6 @@
 """用户表。
 
-字段对齐 mindoc-master 的 ``md_members``，但删除角色体系与多认证方式
-（per_doc 只保留本地账号，见重构方案 §2.2）。
+只保留本地账号体系，不引入角色矩阵与多认证方式。
 """
 
 from __future__ import annotations

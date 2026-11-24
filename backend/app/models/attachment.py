@@ -1,6 +1,6 @@
 """附件表。
 
-对应 mindoc-master 的 ``md_attachment``，``book_id`` 更名为 ``space_id``。
+``book_id`` 更名为 ``space_id``，``document_id`` 关联所属文档。
 """
 
 from __future__ import annotations

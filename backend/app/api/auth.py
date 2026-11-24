@@ -3,7 +3,7 @@
 只做「参数解析 → 校验 → 调 service → 组装响应」，
 ORM 查询与事务边界都在 ``app.services.auth_service`` 中。
 
-接口清单见重构方案 §6.2：
+接口清单：
 - ``POST /api/auth/login`` 登录
 - ``POST /api/auth/logout`` 登出
 - ``GET  /api/auth/me`` 当前用户信息

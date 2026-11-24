@@ -1,6 +1,6 @@
 """系统配置表（KV）。
 
-对应 mindoc-master 的 ``md_options``。
+以「键值对」形态存放全局配置项，供后台管理页读写。
 """
 
 from __future__ import annotations

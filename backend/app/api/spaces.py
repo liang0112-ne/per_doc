@@ -3,7 +3,7 @@
 只做「参数解析 → 校验 → 调 service → 组装响应」，
 ORM 查询与事务边界都在 ``app.services.space_service`` 中。
 
-接口清单见重构方案 §6.2：
+接口清单：
 - ``GET    /api/spaces``           文档库列表
 - ``POST   /api/spaces``           创建文档库
 - ``GET    /api/spaces/{key}``     文档库详情

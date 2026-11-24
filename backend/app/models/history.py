@@ -1,6 +1,6 @@
 """文档历史版本表。
 
-对应 mindoc-master 的 ``md_document_history``。
+记录每次内容变更的快照，供版本浏览、恢复与对比使用。
 """
 
 from __future__ import annotations
